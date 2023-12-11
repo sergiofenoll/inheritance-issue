@@ -1,30 +1,60 @@
-# mu-project
+# Inheritance issue reproduction
 
-Bootstrap a mu.semte.ch microservices environment in three easy steps.
+Although it's not actually related to inheritance at all!
 
-## Quickstart an mu-project
+## What
 
-> [INFO]
-> This project was created by running `mu project new awesome-project-name`.  If read on GitHub under mu-semtech/mu-project then it is the template repository for a new project, use `mu project new` instead.
+If an `INSERT` update contains a resource with multiple classes of which only one is writeable according to the `mu-authorization` configuration, it will only succeed if it's the last class to appear in the update.
 
-Setting up your environment is done in three easy steps:
-1. First configure the running microservices and their names in `docker-compose.yml`
-2. Then, configure how requests are dispatched in `config/dispatcher.ex`
-3. Lastly, simply start the docker-compose.
+## Reproduction steps
 
-### Hooking things up with docker-compose
+- Clone this repository: `git clone git@github.com:sergiofenoll/inheritance-issue.git`
+- Up the Docker containers using `docker compose`: `cd inheritance-issue; docker compose up -d`
+- Start the frontend with a simple reproduction: `cd frontends/inheritance-frontend; eds -n=inheritance-issue_default --proxy=http://identifier`
+- Start the frontend for the `debug-auth-headers` service: `cd frontends/debug-auth-headers-frontend;EDI_EMBER_VERSION="3.15.1" eds -n=inheritance-issue_default --proxy=http://identifier --port=4300 --live-reload-port=49153`
+- Go to http://localhost:4200, open your Network tab in the your development console and click the `Create AJob` button. Observe that the call fails and feel free to look at the mu-authorization logs. Observe that the executed query is trying to insert a resource with classes `ext:AJob`, `ext:Job` (in that order), and fails.
+- Go to http://localhost:4200 and execute the following update (and ignore the response body, it's lying):
 
-Alter the `docker-compose.yml` file so it contains all microservices you need.  The example content should be clear, but you can find more information in the [Docker Compose documentation](https://docs.docker.com/compose/).  Don't remove the `identifier` and `db` container, they are respectively the entry-point and the database of your application.  Don't forget to link the necessary microservices to the dispatcher and the database to the microservices.
+``` sparql
+PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
+PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+INSERT DATA 
+{
+  GRAPH <http://mu.semte.ch/application> {
+    <http://mu.semte.ch/data/ext/AJob/65776D7474673D0EBBCEAD0A> mu:uuid """65776D7474673D0EBBCEAD0A""".
+    <http://mu.semte.ch/data/ext/AJob/65776D7474673D0EBBCEAD0A> a ext:AJob.
+    <http://mu.semte.ch/data/ext/AJob/65776D7474673D0EBBCEAD0A> a ext:Job.
+  }
+}
+```
+- Execute the following query and observe that the response contains no bindings:
 
-### Configure the dispatcher
+``` sparql
+SELECT DISTINCT ?s ?p ?o
+WHERE {
+  ?s ?p ?o
+}
+```
 
-Next, alter the file `config/dispatcher/dispatcher.ex` based on the example that is there by default.  Dispatch requests to the necessary microservices based on the names you used for the microservice.
+- Now execute the following update:
 
-### Boot up the system
+``` sparql
+PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
+PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+INSERT DATA 
+{
+  GRAPH <http://mu.semte.ch/application> {
+    <http://mu.semte.ch/data/ext/AJob/65776D7474673D0EBBCEAD0A> mu:uuid """65776D7474673D0EBBCEAD0A""".
+    <http://mu.semte.ch/data/ext/AJob/65776D7474673D0EBBCEAD0A> a ext:Job.
+    <http://mu.semte.ch/data/ext/AJob/65776D7474673D0EBBCEAD0A> a ext:AJob.
+  }
+}
+```
+- Finally, verify the output of the query again and verify that this time the response contains bindings.
 
-Boot your microservices-enabled system using docker-compose.
-
-    cd /path/to/mu-project
-    docker-compose up
-
-You can shut down using `docker-compose stop` and remove everything using `docker-compose rm`.
+``` sparql
+SELECT DISTINCT ?s ?p ?o
+WHERE {
+  ?s ?p ?o
+}
+```
