@@ -4,8 +4,7 @@ Although it's not actually related to inheritance at all!
 
 ## What
 
-If an `INSERT` update contains a resource with multiple classes of which only one is writeable according to the `mu-authorization` configuration, it will only succeed if it's the last class to appear in the update.
-
+If an `INSERT` update contains a resource with multiple classes of which only one is writeable according to the `mu-authorization` configuration, it will only succeed if the last class to appear in the update is the known one
 ## Reproduction steps
 
 - Clone this repository: `git clone git@github.com:sergiofenoll/inheritance-issue.git`
