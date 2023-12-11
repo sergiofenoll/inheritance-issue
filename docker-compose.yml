@@ -14,6 +14,16 @@ services:
     volumes:
       - ./config/dispatcher:/config
   database:
+    image: semtech/mu-authorization:0.6.0-beta.8
+    environment:
+      MU_SPARQL_ENDPOINT: "http://triplestore:8890/sparql"
+      ERROR_ON_UNWRITTEN_DATA: "true"
+      LOG_INCOMING_SPARQL_QUERIES: "true"
+      LOG_OUTGOING_SPARQL_QUERIES: "true"
+      LOG_OUTGOING_SPARQL_QUERY_ROUNDTRIP: "true"
+    volumes:
+      - ./config/authorization:/config
+  triplestore:
     image: redpencil/virtuoso:1.2.0-rc.1
     environment:
       SPARQL_UPDATE: "true"
@@ -27,3 +37,5 @@ services:
       - database:database
     volumes:
       - ./config/resources:/config
+  debug-auth-headers:
+    image: redpencil/debug-auth-headers

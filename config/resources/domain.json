@@ -1,7 +1,21 @@
 {
   "version": "0.1",
   "prefixes": {
+    "ext": "http://mu.semte.ch/vocabularies/ext/"
   },
   "resources": {
+    "jobs": {
+      "name": "job",
+      "class": "ext:Job",
+      "features": ["include-uri"],
+      "new-resource-base": "http://mu.semte.ch/data/ext/Job/"
+    },
+    "a-jobs": {
+      "name": "a-job",
+      "class": "ext:AJob",
+      "super": ["job"],
+      "features": ["include-uri"],
+      "new-resource-base": "http://mu.semte.ch/data/ext/AJob/"
+    }
   }
 }
