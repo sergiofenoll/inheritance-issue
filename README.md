@@ -13,7 +13,7 @@ If an `INSERT` update contains a resource with multiple classes of which only on
 - Start the frontend with a simple reproduction: `cd frontends/inheritance-frontend; eds -n=inheritance-issue_default --proxy=http://identifier`
 - Start the frontend for the `debug-auth-headers` service: `cd frontends/debug-auth-headers-frontend;EDI_EMBER_VERSION="3.15.1" eds -n=inheritance-issue_default --proxy=http://identifier --port=4300 --live-reload-port=49153`
 - Go to http://localhost:4200, open your Network tab in the your development console and click the `Create AJob` button. Observe that the call fails and feel free to look at the mu-authorization logs. Observe that the executed query is trying to insert a resource with classes `ext:AJob`, `ext:Job` (in that order), and fails.
-- Go to http://localhost:4200 and execute the following update (and ignore the response body, it's lying):
+- Go to http://localhost:4300 and execute the following update (and ignore the response body, it's lying):
 
 ``` sparql
 PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
